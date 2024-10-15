@@ -25,7 +25,11 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!--    UTILITIES    -->
+        <!--    LOGGING    -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
         <!--    TESTING    -->
         <dependency>
