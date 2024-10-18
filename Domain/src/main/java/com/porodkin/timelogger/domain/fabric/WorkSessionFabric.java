@@ -19,7 +19,7 @@ public class WorkSessionFabric {
      * @return new work session with date and time work session
      * @throws CreationWorkSessionException when start date/time is null.
      */
-    public static WorkSession create(UUID sessionId, LocalDateTime start) {
+    public static WorkSession create(UUID sessionId, LocalDateTime start) throws CreationWorkSessionException {
         if (start == null) {
             throw new CreationWorkSessionException("start is null");
         }

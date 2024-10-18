@@ -18,10 +18,10 @@ public class CreationWorkSessionInteractor implements CreationWorkSessionInputBo
     public static final String SUCCESSFUL_MESSAGE = "Work session successfully created.";
     public static final String FAILED_MESSAGE = "Failed to create work session, Please fill the start date and time.";
 
-    private final DataAccessBoundary dataAccess;
+    private final WorkSessionDataAccessBoundary dataAccess;
     private final CreationWorkSessionOutputBoundary<?> addWorkedTimePresenter;
 
-    public CreationWorkSessionInteractor(DataAccessBoundary dataAccess, CreationWorkSessionOutputBoundary<?> addWorkedTimePresenter) {
+    public CreationWorkSessionInteractor(WorkSessionDataAccessBoundary dataAccess, CreationWorkSessionOutputBoundary<?> addWorkedTimePresenter) {
         this.dataAccess = dataAccess;
         this.addWorkedTimePresenter = addWorkedTimePresenter;
     }
@@ -39,10 +39,11 @@ public class CreationWorkSessionInteractor implements CreationWorkSessionInputBo
             CreatedWorkSessionOutputData outputData = CreatedWorkSessionFactory.create(Boolean.TRUE, null, FAILED_MESSAGE);
             addWorkedTimePresenter.presentCreatedWorkSession(outputData);
         }
-        dataAccess.saveWorkTime(workSession);
+        WorkSession savedWorkSession = dataAccess.saveWorkSession(workSession);
 
         log.info("Work session created: {}", uuid);
-        CreatedWorkSessionOutputData outputData = CreatedWorkSessionFactory.create(Boolean.TRUE, uuid.toString(), SUCCESSFUL_MESSAGE);
+        CreatedWorkSessionOutputData outputData =
+                CreatedWorkSessionFactory.create(Boolean.TRUE, savedWorkSession.getUuid().toString(), SUCCESSFUL_MESSAGE);
         addWorkedTimePresenter.presentCreatedWorkSession(outputData);
     }
 }

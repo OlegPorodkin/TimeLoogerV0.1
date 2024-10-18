@@ -5,7 +5,7 @@ import com.porodkin.timelogger.persistance.ImMemoryWorkTimePersist;
 import com.porodkin.timelogger.usecase.CreationWorkSessionInputBoundary;
 import com.porodkin.timelogger.usecase.CreationWorkSessionInteractor;
 import com.porodkin.timelogger.usecase.CreationWorkSessionOutputBoundary;
-import com.porodkin.timelogger.usecase.DataAccessBoundary;
+import com.porodkin.timelogger.usecase.WorkSessionDataAccessBoundary;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class SpringConfiguration {
 
     @Bean
-    public DataAccessBoundary dataAccessBoundary() {
+    public WorkSessionDataAccessBoundary dataAccessBoundary() {
         return new ImMemoryWorkTimePersist();
     }
 
@@ -23,7 +23,7 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public CreationWorkSessionInputBoundary creationWorkSessionInputBoundary(DataAccessBoundary dataAccessBoundary, CreationWorkSessionOutputBoundary creationWorkSessionOutputBoundary) {
-        return new CreationWorkSessionInteractor(dataAccessBoundary, creationWorkSessionOutputBoundary);
+    public CreationWorkSessionInputBoundary creationWorkSessionInputBoundary(WorkSessionDataAccessBoundary workSessionDataAccessBoundary, CreationWorkSessionOutputBoundary creationWorkSessionOutputBoundary) {
+        return new CreationWorkSessionInteractor(workSessionDataAccessBoundary, creationWorkSessionOutputBoundary);
     }
 }
