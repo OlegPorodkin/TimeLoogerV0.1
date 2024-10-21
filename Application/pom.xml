@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.porodkin.timelogger</groupId>
-            <artifactId>time-logger-use-case</artifactId>
+            <artifactId>time-logger-usecase</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

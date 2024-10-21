@@ -1,11 +1,10 @@
 package com.porodkin.timelogger.application.configuratuion;
 
 import com.porodkin.timelogger.controller.CreteWorkSessionRestPresenter;
+import com.porodkin.timelogger.controller.UpdateWorkSessionRestPresenter;
 import com.porodkin.timelogger.persistance.ImMemoryWorkTimePersist;
-import com.porodkin.timelogger.usecase.CreationWorkSessionInputBoundary;
-import com.porodkin.timelogger.usecase.CreationWorkSessionInteractor;
-import com.porodkin.timelogger.usecase.CreationWorkSessionOutputBoundary;
-import com.porodkin.timelogger.usecase.WorkSessionDataAccessBoundary;
+import com.porodkin.timelogger.usecase.*;
+import com.porodkin.timelogger.usecase.interactor.WritingWorkSessionInteractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,12 +17,21 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public CreationWorkSessionOutputBoundary creationWorkSessionOutputBoundary() {
+    public CreationWorkSessionOutputBoundary<?> creationWorkSessionOutputBoundary() {
         return new CreteWorkSessionRestPresenter();
     }
 
     @Bean
-    public CreationWorkSessionInputBoundary creationWorkSessionInputBoundary(WorkSessionDataAccessBoundary workSessionDataAccessBoundary, CreationWorkSessionOutputBoundary creationWorkSessionOutputBoundary) {
-        return new CreationWorkSessionInteractor(workSessionDataAccessBoundary, creationWorkSessionOutputBoundary);
+    public UpdateWorkSessionOutputBoundary<?> updateWorkSessionOutputBoundary() {
+        return new UpdateWorkSessionRestPresenter();
+    }
+
+    @Bean
+    public WritingWorkSessionInputBoundary creationWorkSessionInputBoundary(
+            WorkSessionDataAccessBoundary workSessionDataAccessBoundary,
+            CreationWorkSessionOutputBoundary<?> creationWorkSessionOutputBoundary,
+            UpdateWorkSessionOutputBoundary<?> updateWorkSessionOutputBoundary
+    ) {
+        return new WritingWorkSessionInteractor(workSessionDataAccessBoundary, creationWorkSessionOutputBoundary, updateWorkSessionOutputBoundary);
     }
 }

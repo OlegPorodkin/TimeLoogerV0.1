@@ -12,7 +12,8 @@ public class ImMemoryWorkTimePersist implements WorkSessionDataAccessBoundary {
 
     @Override
     public WorkSession saveWorkSession(WorkSession workTime) {
-        return sessions.put(workTime.getUuid(), workTime);
+        sessions.put(workTime.getUuid(), workTime);
+        return workTime;
     }
 
     @Override
