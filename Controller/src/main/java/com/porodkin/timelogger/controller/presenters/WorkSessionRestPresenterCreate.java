@@ -1,10 +1,10 @@
-package com.porodkin.timelogger.controller;
+package com.porodkin.timelogger.controller.presenters;
 
-import com.porodkin.timelogger.usecase.CreationWorkSessionOutputBoundary;
+import com.porodkin.timelogger.usecase.WorkSessionOutputBoundaryCreation;
 import com.porodkin.timelogger.usecase.datastuct.output.CreatedWorkSessionOutputData;
 import org.springframework.http.ResponseEntity;
 
-public class CreteWorkSessionRestPresenter implements CreationWorkSessionOutputBoundary<ResponseEntity<CreatedWorkSessionOutputData>> {
+public class WorkSessionRestPresenterCreate implements WorkSessionOutputBoundaryCreation<ResponseEntity<CreatedWorkSessionOutputData>> {
 
     private ResponseEntity<CreatedWorkSessionOutputData> responseEntity;
 

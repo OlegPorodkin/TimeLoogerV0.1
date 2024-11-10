@@ -3,10 +3,7 @@ package com.porodkin.timelogger.domain;
 import com.porodkin.timelogger.domain.exceptions.EndWorkSessionException;
 import com.porodkin.timelogger.domain.exceptions.WorkedTimeDurationException;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.UUID;
 
 /**
@@ -19,11 +16,12 @@ public class WorkSession {
     public final static String CALCULATE_END_WORK_SESSION_EXCEPTION = END_WORK_SESSION_EXCEPTION + " First, end of session";
     public final static String CALCULATE_WORK_TIME_DURATION_EXCEPTION = "Work time duration cannot be less than 1h";
 
+    private String userId;
     private UUID uuid;
-    private LocalDate date;
-    private LocalTime startTime;
-    private LocalTime endTime;
-    private LocalTime duration;
+    private OffsetDateTime date;
+    private OffsetTime startTime;
+    private OffsetTime endTime;
+    private Duration duration;
 
     /**
      * Started new work session and started it
@@ -31,10 +29,20 @@ public class WorkSession {
      * @param uuid unique identifier of work session
      * @param startTime time and date of started work session
      */
-    public WorkSession(UUID uuid, LocalDateTime startTime) {
+    public WorkSession(String userId, UUID uuid, OffsetDateTime startTime) {
+        this.userId = userId;
         this.uuid = uuid;
-        this.startTime = startTime.toLocalTime();
-        this.date = startTime.toLocalDate();
+        this.startTime = startTime.toOffsetTime();
+        this.date = startTime;
+    }
+
+    public WorkSession(String userId, UUID uuid, OffsetDateTime date, OffsetTime startTime, OffsetTime endTime, Duration duration) {
+        this.userId = userId;
+        this.uuid = uuid;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.duration = duration;
     }
 
     /**
@@ -44,7 +52,7 @@ public class WorkSession {
      * @param endTime in what time work session is over
      * @throws EndWorkSessionException when ending time is null;
      */
-    public void endWorkSession(LocalTime endTime) {
+    public void endWorkSession(OffsetTime endTime) {
         if (endTime == null) {
             throw new EndWorkSessionException(END_WORK_SESSION_EXCEPTION);
         }
@@ -70,22 +78,23 @@ public class WorkSession {
             throw new WorkedTimeDurationException(CALCULATE_WORK_TIME_DURATION_EXCEPTION);
         }
 
-        long minutes = workHours.toMinutes() % 60;
-
-        this.duration = LocalTime.of((int) hours, (int) minutes);
+        this.duration = workHours;
     }
 
+    public String getUserId() {
+        return userId;
+    }
     public UUID getUuid() {
         return uuid;
     }
-    public LocalDate getDate() {return date;}
-    public LocalTime getStartTime() {
+    public OffsetDateTime getDate() {return date;}
+    public OffsetTime getStartTime() {
         return startTime;
     }
-    public LocalTime getEndTime() {
+    public OffsetTime getEndTime() {
         return endTime;
     }
-    public LocalTime getDuration() {
+    public Duration getDuration() {
         return duration;
     }
 }

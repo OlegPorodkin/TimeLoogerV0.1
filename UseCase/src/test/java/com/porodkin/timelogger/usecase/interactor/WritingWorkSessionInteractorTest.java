@@ -1,11 +1,9 @@
 package com.porodkin.timelogger.usecase.interactor;
 
 import com.porodkin.timelogger.domain.WorkSession;
-import com.porodkin.timelogger.usecase.CreationWorkSessionOutputBoundary;
-import com.porodkin.timelogger.usecase.UpdateWorkSessionOutputBoundary;
-import com.porodkin.timelogger.usecase.WorkSessionDataAccessBoundary;
-import com.porodkin.timelogger.usecase.datastuct.input.CreateWorkSessionInputData;
-import com.porodkin.timelogger.usecase.datastuct.input.UpdateWorkSessionInputData;
+import com.porodkin.timelogger.usecase.*;
+import com.porodkin.timelogger.usecase.datastuct.input.WorkSessionInputDataCreate;
+import com.porodkin.timelogger.usecase.datastuct.input.WorkSessionInputDataUpdate;
 import com.porodkin.timelogger.usecase.datastuct.output.CreatedWorkSessionOutputData;
 import com.porodkin.timelogger.usecase.datastuct.output.UpdateWorkSessionOutputData;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,105 +12,122 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.NoSuchElementException;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class WritingWorkSessionInteractorTest {
 
     @Mock
-    private WorkSessionDataAccessBoundary dataAccess;
+    private WorkSessionDataAccessSave workSessionDataAccessSave;
     @Mock
-    private CreationWorkSessionOutputBoundary<?> addWorkedTimePresenter;
+    private WorkSessionDataAccessUpdate workSessionDataAccessUpdate;
     @Mock
-    private UpdateWorkSessionOutputBoundary<?> updateWorkedTimePresenter;
+    private WorkSessionDataAccessRead workSessionDataAccessRead;
 
-    private WritingWorkSessionInteractor interactor;
+    @Mock
+    private WorkSessionOutputBoundaryCreation<?> addWorkedTimePresenter;
+    @Mock
+    private WorkSessionOutputBoundaryUpdate<?> updateWorkedTimePresenter;
+
+    private WorkSessionInteractorWriting interactor;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        interactor = new WritingWorkSessionInteractor(dataAccess, addWorkedTimePresenter, updateWorkedTimePresenter);
+        interactor = new WorkSessionInteractorWriting(
+                workSessionDataAccessSave,
+                workSessionDataAccessUpdate,
+                workSessionDataAccessRead,
+                addWorkedTimePresenter,
+                updateWorkedTimePresenter
+        );
     }
 
     @Test
     void createWorkSessionSuccess() {
-        CreateWorkSessionInputData inputData = mock(CreateWorkSessionInputData.class);
-        when(inputData.getWorkSession()).thenReturn(LocalDateTime.now());
+        WorkSessionInputDataCreate inputData = mock(WorkSessionInputDataCreate.class);
+        when(inputData.getWorkSession()).thenReturn(OffsetDateTime.now());
 
         WorkSession workSession = mock(WorkSession.class);
         when(workSession.getUuid()).thenReturn(UUID.randomUUID());
-        when(dataAccess.saveWorkSession(any(WorkSession.class))).thenReturn(workSession);
+        when(workSessionDataAccessSave.saveWorkSession(any(WorkSession.class))).thenReturn(workSession);
 
         interactor.crateWorkSession(inputData);
 
         ArgumentCaptor<CreatedWorkSessionOutputData> captor = ArgumentCaptor.forClass(CreatedWorkSessionOutputData.class);
         verify(addWorkedTimePresenter).presentCreatedWorkSession(captor.capture());
-        assertEquals(WritingWorkSessionInteractor.SUCCESSFUL_CREATE_MESSAGE, captor.getValue().getMessage());
+        assertEquals(WorkSessionInteractorWriting.SUCCESSFUL_CREATE_MESSAGE, captor.getValue().getMessage());
     }
 
     @Test
     void createWorkSessionFailureDueToException() {
-        CreateWorkSessionInputData inputData = mock(CreateWorkSessionInputData.class);
+        WorkSessionInputDataCreate inputData = mock(WorkSessionInputDataCreate.class);
         when(inputData.getWorkSession()).thenReturn(null);
 
         interactor.crateWorkSession(inputData);
 
         ArgumentCaptor<CreatedWorkSessionOutputData> captor = ArgumentCaptor.forClass(CreatedWorkSessionOutputData.class);
         verify(addWorkedTimePresenter).presentCreatedWorkSession(captor.capture());
-        assertEquals(WritingWorkSessionInteractor.FAILED_CREATE_MESSAGE, captor.getValue().getMessage());
+        assertEquals(WorkSessionInteractorWriting.FAILED_CREATE_MESSAGE, captor.getValue().getMessage());
     }
 
     @Test
     void updateWorkSessionSuccess() {
+        String userId = UUID.randomUUID().toString();
         UUID sessionId = UUID.randomUUID();
-        UpdateWorkSessionInputData inputData = mock(UpdateWorkSessionInputData.class);
+        WorkSessionInputDataUpdate inputData = mock(WorkSessionInputDataUpdate.class);
+        when(inputData.getUserId()).thenReturn(userId);
         when(inputData.getSessionId()).thenReturn(sessionId);
-        when(inputData.getEndTime()).thenReturn(LocalTime.from(LocalDateTime.now()));
+        when(inputData.getEndTime()).thenReturn(OffsetTime.now());
 
         WorkSession workSession = mock(WorkSession.class);
         when(workSession.getUuid()).thenReturn(sessionId);
-        when(dataAccess.findByWorkSessionId(anyString())).thenReturn(Optional.of(workSession));
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenReturn(Optional.of(workSession));
 
         interactor.updateWorkSession(inputData);
 
         ArgumentCaptor<UpdateWorkSessionOutputData> captor = ArgumentCaptor.forClass(UpdateWorkSessionOutputData.class);
         verify(updateWorkedTimePresenter).presentUpdateWorkSession(captor.capture());
-        assertEquals(WritingWorkSessionInteractor.SUCCESSFUL_UPDATE_MESSAGE, captor.getValue().getMessage());
+        assertEquals(WorkSessionInteractorWriting.SUCCESSFUL_UPDATE_MESSAGE, captor.getValue().getMessage());
     }
 
     @Test
     void updateWorkSessionFailureDueToException() {
+        String userId = UUID.randomUUID().toString();
         UUID sessionId = UUID.randomUUID();
-        UpdateWorkSessionInputData inputData = mock(UpdateWorkSessionInputData.class);
+        WorkSessionInputDataUpdate inputData = mock(WorkSessionInputDataUpdate.class);
+        when(inputData.getUserId()).thenReturn(userId);
         when(inputData.getSessionId()).thenReturn(sessionId);
         when(inputData.getEndTime()).thenReturn(null);
 
-        WorkSession workSession = new WorkSession(sessionId, LocalDateTime.now());
-        when(dataAccess.findByWorkSessionId(eq(sessionId.toString()))).thenReturn(Optional.of(workSession));
+        WorkSession workSession = new WorkSession(userId, sessionId, OffsetDateTime.now());
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(eq(userId), eq(sessionId.toString()))).thenReturn(Optional.of(workSession));
 
         interactor.updateWorkSession(inputData);
 
         ArgumentCaptor<UpdateWorkSessionOutputData> captor = ArgumentCaptor.forClass(UpdateWorkSessionOutputData.class);
         verify(updateWorkedTimePresenter).presentUpdateWorkSession(captor.capture());
-        assertEquals(WritingWorkSessionInteractor.FAILED_UPDATE_MESSAGE, captor.getValue().getMessage());
+        assertEquals(WorkSessionInteractorWriting.FAILED_UPDATE_MESSAGE, captor.getValue().getMessage());
     }
 
     @Test
     void updateWorkSessionNotFound() {
         UUID sessionId = UUID.randomUUID();
-        UpdateWorkSessionInputData inputData = mock(UpdateWorkSessionInputData.class);
+        WorkSessionInputDataUpdate inputData = mock(WorkSessionInputDataUpdate.class);
         when(inputData.getSessionId()).thenReturn(sessionId);
 
-        when(dataAccess.findByWorkSessionId(anyString())).thenReturn(Optional.empty());
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> interactor.updateWorkSession(inputData));
+        interactor.updateWorkSession(inputData);
+
+        ArgumentCaptor<UpdateWorkSessionOutputData> captor = ArgumentCaptor.forClass(UpdateWorkSessionOutputData.class);
+        verify(updateWorkedTimePresenter).presentUpdateWorkSession(captor.capture());
+        assertEquals(WorkSessionInteractorWriting.FAILED_UPDATE_MESSAGE_NOT_EXIST, captor.getValue().getMessage());
     }
 }

@@ -1,22 +1,26 @@
 package com.porodkin.timelogger.persistance.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import com.porodkin.timelogger.persistance.converters.DurationConverter;
+import lombok.Data;
 
+import javax.persistence.*;
+import java.time.*;
 
+@Data
+@Entity
 public class WorkTime {
 
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long userId;
-    private LocalDateTime date;
+    private String sessionId;
+    private OffsetDateTime date;
+    private String userOffset;
+    private OffsetTime startTime;
+    private OffsetTime endTime;
 
-
-    private Integer overtimeDuration;
-    private LocalTime workTime;
-    private LocalTime overtime;
-    private BigDecimal worktimePayment;
-    private BigDecimal overtimePayment;
+    @Convert(converter = DurationConverter.class)
+    private Duration duration;
 }

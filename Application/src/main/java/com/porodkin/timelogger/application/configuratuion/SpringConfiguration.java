@@ -1,10 +1,10 @@
 package com.porodkin.timelogger.application.configuratuion;
 
-import com.porodkin.timelogger.controller.CreteWorkSessionRestPresenter;
-import com.porodkin.timelogger.controller.UpdateWorkSessionRestPresenter;
-import com.porodkin.timelogger.persistance.ImMemoryWorkTimePersist;
+import com.porodkin.timelogger.presenters.WorkSessionRestPresenterCreate;
+import com.porodkin.timelogger.presenters.WorkSessionRestPresenterUpdate;
+import com.porodkin.timelogger.persistance.WorkTimeImMemoryPersist;
 import com.porodkin.timelogger.usecase.*;
-import com.porodkin.timelogger.usecase.interactor.WritingWorkSessionInteractor;
+import com.porodkin.timelogger.usecase.interactor.WorkSessionInteractorWriting;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,26 +12,32 @@ import org.springframework.context.annotation.Configuration;
 public class SpringConfiguration {
 
     @Bean
-    public WorkSessionDataAccessBoundary dataAccessBoundary() {
-        return new ImMemoryWorkTimePersist();
+    public WorkTimeImMemoryPersist initWorkTimeImMemoryPersist() {
+        return new WorkTimeImMemoryPersist();
     }
 
     @Bean
-    public CreationWorkSessionOutputBoundary<?> creationWorkSessionOutputBoundary() {
-        return new CreteWorkSessionRestPresenter();
+    public WorkSessionOutputBoundaryCreation<?> creationWorkSessionOutputBoundary() {
+        return new WorkSessionRestPresenterCreate();
     }
 
     @Bean
-    public UpdateWorkSessionOutputBoundary<?> updateWorkSessionOutputBoundary() {
-        return new UpdateWorkSessionRestPresenter();
+    public WorkSessionOutputBoundaryUpdate<?> updateWorkSessionOutputBoundary() {
+        return new WorkSessionRestPresenterUpdate();
     }
 
     @Bean
-    public WritingWorkSessionInputBoundary creationWorkSessionInputBoundary(
-            WorkSessionDataAccessBoundary workSessionDataAccessBoundary,
-            CreationWorkSessionOutputBoundary<?> creationWorkSessionOutputBoundary,
-            UpdateWorkSessionOutputBoundary<?> updateWorkSessionOutputBoundary
+    public WorkSessionInputBoundaryWriting creationWorkSessionInputBoundary(
+            WorkTimeImMemoryPersist initWorkTimeImMemoryPersist,
+            WorkSessionOutputBoundaryCreation<?> workSessionOutputBoundaryCreation,
+            WorkSessionOutputBoundaryUpdate<?> workSessionOutputBoundaryUpdate
     ) {
-        return new WritingWorkSessionInteractor(workSessionDataAccessBoundary, creationWorkSessionOutputBoundary, updateWorkSessionOutputBoundary);
+        return new WorkSessionInteractorWriting(
+                initWorkTimeImMemoryPersist,
+                initWorkTimeImMemoryPersist,
+                initWorkTimeImMemoryPersist,
+                workSessionOutputBoundaryCreation,
+                workSessionOutputBoundaryUpdate
+        );
     }
 }

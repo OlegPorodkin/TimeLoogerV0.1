@@ -4,30 +4,34 @@ import com.porodkin.timelogger.domain.exceptions.EndWorkSessionException;
 import com.porodkin.timelogger.domain.exceptions.WorkedTimeDurationException;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorkSessionTest {
+
+    private ZoneOffset offset = ZoneOffset.of("-03:30");
+
     @Test
     public void testWorkSessionCreation() {
+        String userId = UUID.randomUUID().toString();
         UUID uuid = UUID.randomUUID();
-        LocalDateTime startDateTime = LocalDateTime.of(2024, 10, 10, 9, 0);
-        WorkSession session = new WorkSession(uuid, startDateTime);
+        OffsetDateTime startDateTime = OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(7, 30, 0), offset);
+        WorkSession session = new WorkSession(userId, uuid, startDateTime);
 
         assertEquals(uuid, session.getUuid(), "UUID should match the one provided");
-        assertEquals(startDateTime.toLocalDate(), session.getDate(), "Date should match the start date");
-        assertEquals(startDateTime.toLocalTime(), session.getStartTime(), "Start time should match the one provided");
+        assertEquals(startDateTime, session.getDate(), "Date should match the start date");
+        assertEquals(startDateTime.toOffsetTime(), session.getStartTime(), "Start time should match the one provided");
         assertNull(session.getEndTime(), "End time should be null upon creation");
         assertNull(session.getDuration(), "Duration should be null upon creation");
     }
 
     @Test
     public void testEndWorkSession() {
-        WorkSession session = new WorkSession(UUID.randomUUID(), LocalDateTime.of(2023, 10, 10, 9, 0));
-        LocalTime endTime = LocalTime.of(17, 0);
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(), OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
+        OffsetTime endTime = OffsetTime.of(LocalTime.of(17, 0), offset);
         session.endWorkSession(endTime);
 
         assertEquals(endTime, session.getEndTime(), "End time should be set correctly");
@@ -35,53 +39,58 @@ class WorkSessionTest {
 
     @Test
     public void testCalculateWorkDuration() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 9, 0));
-        session.endWorkSession(LocalTime.of(17, 30));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(17, 30), offset));
         session.calculateWorkDuration();
 
-        LocalTime expectedDuration = LocalTime.of(8, 30);
-        assertEquals(expectedDuration, session.getDuration(), "Duration should be 8 hours and 30 minutes");
+        OffsetTime expectedDuration = OffsetTime.of(LocalTime.of(8, 30), offset);
+        assertEquals(expectedDuration, OffsetTime.of(LocalTime.MIDNIGHT.plus(session.getDuration()), offset), "Duration should be 8 hours and 30 minutes");
     }
 
     @Test
     public void testCalculateWorkDurationExactlyOneHour() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 9, 0));
-        session.endWorkSession(LocalTime.of(10, 0));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(10, 0), offset));
         session.calculateWorkDuration();
 
-        LocalTime expectedDuration = LocalTime.of(1, 0);
-        assertEquals(expectedDuration, session.getDuration(), "Duration should be exactly 1 hour");
+        OffsetTime expectedDuration = OffsetTime.of(LocalTime.of(1, 0), offset);
+        assertEquals(expectedDuration, OffsetTime.of(LocalTime.MIDNIGHT.plus(session.getDuration()), offset), "Duration should be exactly 1 hour");
     }
 
     @Test
     public void testCalculateWorkDurationWithMinutes() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 8, 15));
-        session.endWorkSession(LocalTime.of(16, 45));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(8, 15, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(16, 45), offset));
         session.calculateWorkDuration();
 
-        LocalTime expectedDuration = LocalTime.of(8, 30);
-        assertEquals(expectedDuration, session.getDuration(), "Duration should be 8 hours and 30 minutes");
+        OffsetTime expectedDuration = OffsetTime.of(LocalTime.of(8, 30), offset);
+        assertEquals(expectedDuration, OffsetTime.of(LocalTime.MIDNIGHT.plus(session.getDuration()), offset), "Duration should be 8 hours and 30 minutes");
     }
 
     @Test
     public void testCalculateWorkDurationMaximumAllowed() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 0, 0));
-        session.endWorkSession(LocalTime.of(23, 59));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(0, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(23, 59), offset));
         session.calculateWorkDuration();
 
-        LocalTime expectedDuration = LocalTime.of(23, 59);
-        assertEquals(expectedDuration, session.getDuration(), "Duration should be 23 hours and 59 minutes");
+        OffsetTime expectedDuration = OffsetTime.of(LocalTime.of(23, 59), offset);
+        assertEquals(expectedDuration, OffsetTime.of(LocalTime.MIDNIGHT.plus(session.getDuration()), offset), "Duration should be 23 hours and 59 minutes");
     }
 
     @Test
     public void testCalculateWorkDurationThrowsExceptionForShortDuration() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 9, 0));
-        session.endWorkSession(LocalTime.of(9, 30));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(9, 30), offset));
 
         Exception exception = assertThrows(WorkedTimeDurationException.class, session::calculateWorkDuration);
         assertEquals("Work time duration cannot be less than 1h", exception.getMessage(),
@@ -90,9 +99,10 @@ class WorkSessionTest {
 
     @Test
     public void testCalculateWorkDurationThrowsExceptionForNegativeDuration() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 17, 0));
-        session.endWorkSession(LocalTime.of(9, 0));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(17, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(9, 0), offset));
 
         Exception exception = assertThrows(WorkedTimeDurationException.class, session::calculateWorkDuration);
         assertEquals("Work time duration cannot be less than 1h", exception.getMessage(),
@@ -101,8 +111,9 @@ class WorkSessionTest {
 
     @Test
     public void testCalculateWorkDurationWithNullEndTime() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 9, 0));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
 
         Exception exception = assertThrows(EndWorkSessionException.class, session::calculateWorkDuration);
         assertTrue(exception.getMessage().contains("endTime"),
@@ -111,8 +122,9 @@ class WorkSessionTest {
 
     @Test
     public void testEndWorkSessionWithNull() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 9, 0));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(9, 0, 0), offset));
 
         assertThrows(EndWorkSessionException.class, () -> session.endWorkSession(null),
                 "Ending work session with null should throw EndWorkSessionException");
@@ -120,9 +132,10 @@ class WorkSessionTest {
 
     @Test
     public void testCalculateWorkDurationHandlesMidnightCrossing() {
-        WorkSession session = new WorkSession(UUID.randomUUID(),
-                LocalDateTime.of(2023, 10, 10, 22, 0));
-        session.endWorkSession(LocalTime.of(2, 0));
+        String userId = UUID.randomUUID().toString();
+        WorkSession session = new WorkSession(userId, UUID.randomUUID(),
+                OffsetDateTime.of(LocalDate.of(2024, 10, 25), LocalTime.of(22, 0, 0), offset));
+        session.endWorkSession(OffsetTime.of(LocalTime.of(2, 0), offset));
 
         Exception exception = assertThrows(WorkedTimeDurationException.class, session::calculateWorkDuration);
         assertEquals("Work time duration cannot be less than 1h", exception.getMessage(),
