@@ -62,4 +62,8 @@ public class WorkSessionFabric {
                 duration
         );
     }
+
+    public static WorkSession create(String userId, String sessionId, OffsetTime endTime) {
+        return new WorkSession(userId, UUID.fromString(sessionId), null, null, endTime, null);
+    }
 }

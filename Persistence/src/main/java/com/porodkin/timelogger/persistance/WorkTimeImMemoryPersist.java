@@ -1,14 +1,14 @@
 package com.porodkin.timelogger.persistance;
 
 import com.porodkin.timelogger.domain.WorkSession;
-import com.porodkin.timelogger.usecase.WorkSessionDataAccessRetrieve;
+import com.porodkin.timelogger.usecase.WorkSessionDataAccessRead;
 import com.porodkin.timelogger.usecase.WorkSessionDataAccessSave;
 import com.porodkin.timelogger.usecase.WorkSessionDataAccessUpdate;
 import com.porodkin.timelogger.usecase.exceptions.WorkSessionNotFoundException;
 
 import java.util.*;
 
-public class WorkTimeImMemoryPersist implements WorkSessionDataAccessRetrieve, WorkSessionDataAccessSave, WorkSessionDataAccessUpdate {
+public class WorkTimeImMemoryPersist implements WorkSessionDataAccessRead, WorkSessionDataAccessSave, WorkSessionDataAccessUpdate {
 
     private final Map<UUID, WorkSession> sessions = new HashMap<>();
 
@@ -19,17 +19,17 @@ public class WorkTimeImMemoryPersist implements WorkSessionDataAccessRetrieve, W
     }
 
     @Override
-    public Collection<WorkSession> findAllWorkSessions() {
+    public Collection<WorkSession> findAllWorkSessions(String userId) {
         return sessions.values();
     }
 
     @Override
-    public Optional<WorkSession> findByWorkSessionId(String id) throws WorkSessionNotFoundException {
-        return Optional.ofNullable(sessions.get(UUID.fromString(id)));
+    public WorkSession findByUserIdAndWorkSessionId(String userId, String sessionId) throws WorkSessionNotFoundException {
+        return sessions.get(UUID.fromString(sessionId));
     }
 
     @Override
-    public WorkSession updateWorkSession(WorkSession workTime) {
+    public WorkSession updateWorkSession(WorkSession workTime) throws WorkSessionNotFoundException {
         return sessions.put(workTime.getUuid(), workTime);
     }
 }

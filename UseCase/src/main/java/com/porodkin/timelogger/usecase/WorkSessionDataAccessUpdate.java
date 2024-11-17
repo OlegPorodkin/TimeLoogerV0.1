@@ -1,6 +1,7 @@
 package com.porodkin.timelogger.usecase;
 
 import com.porodkin.timelogger.domain.WorkSession;
+import com.porodkin.timelogger.usecase.exceptions.WorkSessionNotFoundException;
 
 public interface WorkSessionDataAccessUpdate {
     /**
@@ -9,5 +10,5 @@ public interface WorkSessionDataAccessUpdate {
      * @param workSession the {@link WorkSession} object containing updated information
      * @return the updated {@link WorkSession} object, or null if the update was not successful
      */
-    WorkSession updateWorkSession(WorkSession workSession);
+    WorkSession updateWorkSession(WorkSession workSession) throws WorkSessionNotFoundException;
 }

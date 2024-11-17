@@ -1,0 +1,72 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "create-worktime-table",
+        "author": "Oleg Porodkin",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "work_time",
+              "columns": [
+                {
+                  "column": {
+                    "name": "id",
+                    "type": "BIGINT",
+                    "autoIncrement": true,
+                    "constraints": {
+                      "primaryKey": true,
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "user_id",
+                    "type": "VARCHAR(255)",
+                    "constraints": {
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "session_id",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "date",
+                    "type": "TIMESTAMP WITH TIME ZONE"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "start_time",
+                    "type": "TIME WITH TIME ZONE"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "end_time",
+                    "type": "TIME WITH TIME ZONE"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "duration",
+                    "type": "BIGINT",
+                    "constraints": {
+                      "nullable": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.UUID;
 
 public class WorkSessionInteractorWriting implements WorkSessionInputBoundaryWriting {
@@ -75,12 +76,15 @@ public class WorkSessionInteractorWriting implements WorkSessionInputBoundaryWri
     @Override
     public void updateWorkSession(WorkSessionInputDataUpdate workSession) {
         WorkSession workSessionFromDS;
-        try {
-            workSessionFromDS = workSessionDataAccessRead
-                    .findByUserIdAndWorkSessionId(workSession.getUserId(), workSession.getSessionId().toString())
-                    .orElseThrow(() -> new WorkSessionNotFoundException(workSession.getSessionId().toString()));
+        String userId = workSession.getUserId();
+        String sessionId = workSession.getSessionId().toString();
+        OffsetTime endTime = workSession.getEndTime();
 
-            workSessionFromDS.endWorkSession(workSession.getEndTime());
+        try {
+            WorkSession updateEndTime = WorkSessionFabric.create(userId, sessionId, endTime);
+
+            workSessionFromDS = workSessionDataAccessUpdate.updateWorkSession(updateEndTime);
+
         } catch (WorkSessionNotFoundException e) {
             log.error("Work session: {} failed to update.The work session is not exist", workSession.getSessionId(), e);
             UpdateWorkSessionOutputData updateWorkSessionOutputData = UpdatedWorkSessionFactory.create(Boolean.FALSE, FAILED_UPDATE_MESSAGE_NOT_EXIST);
@@ -92,8 +96,6 @@ public class WorkSessionInteractorWriting implements WorkSessionInputBoundaryWri
             updateWorkedTimePresenter.presentUpdateWorkSession(updateWorkSessionOutputData);
             return;
         }
-
-        workSessionDataAccessUpdate.updateWorkSession(workSessionFromDS);
 
         log.info("Work session updated: {}", workSessionFromDS.getUuid());
         UpdateWorkSessionOutputData updateWorkSessionOutputData = UpdatedWorkSessionFactory.create(Boolean.TRUE, SUCCESSFUL_UPDATE_MESSAGE);

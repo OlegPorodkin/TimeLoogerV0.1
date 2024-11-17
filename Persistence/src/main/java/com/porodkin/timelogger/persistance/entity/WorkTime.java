@@ -1,23 +1,25 @@
 package com.porodkin.timelogger.persistance.entity;
 
 import com.porodkin.timelogger.persistance.converters.DurationConverter;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.*;
 import java.time.*;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Table(name = "work_time")
 public class WorkTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    private String userId;
     private String sessionId;
     private OffsetDateTime date;
-    private String userOffset;
     private OffsetTime startTime;
     private OffsetTime endTime;
 

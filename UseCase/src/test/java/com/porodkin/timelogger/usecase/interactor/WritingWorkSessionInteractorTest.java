@@ -6,15 +6,16 @@ import com.porodkin.timelogger.usecase.datastuct.input.WorkSessionInputDataCreat
 import com.porodkin.timelogger.usecase.datastuct.input.WorkSessionInputDataUpdate;
 import com.porodkin.timelogger.usecase.datastuct.output.CreatedWorkSessionOutputData;
 import com.porodkin.timelogger.usecase.datastuct.output.UpdateWorkSessionOutputData;
+import com.porodkin.timelogger.usecase.exceptions.WorkSessionNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,6 +36,7 @@ class WritingWorkSessionInteractorTest {
     @Mock
     private WorkSessionOutputBoundaryUpdate<?> updateWorkedTimePresenter;
 
+    @InjectMocks
     private WorkSessionInteractorWriting interactor;
 
     @BeforeEach
@@ -88,7 +90,7 @@ class WritingWorkSessionInteractorTest {
 
         WorkSession workSession = mock(WorkSession.class);
         when(workSession.getUuid()).thenReturn(sessionId);
-        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenReturn(Optional.of(workSession));
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenReturn(workSession);
 
         interactor.updateWorkSession(inputData);
 
@@ -107,7 +109,7 @@ class WritingWorkSessionInteractorTest {
         when(inputData.getEndTime()).thenReturn(null);
 
         WorkSession workSession = new WorkSession(userId, sessionId, OffsetDateTime.now());
-        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(eq(userId), eq(sessionId.toString()))).thenReturn(Optional.of(workSession));
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(eq(userId), eq(sessionId.toString()))).thenReturn(workSession);
 
         interactor.updateWorkSession(inputData);
 
@@ -119,10 +121,12 @@ class WritingWorkSessionInteractorTest {
     @Test
     void updateWorkSessionNotFound() {
         UUID sessionId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         WorkSessionInputDataUpdate inputData = mock(WorkSessionInputDataUpdate.class);
         when(inputData.getSessionId()).thenReturn(sessionId);
+        when(inputData.getUserId()).thenReturn(userId.toString());
 
-        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenReturn(Optional.empty());
+        when(workSessionDataAccessRead.findByUserIdAndWorkSessionId(anyString(), anyString())).thenThrow(new WorkSessionNotFoundException(userId.toString()));
 
         interactor.updateWorkSession(inputData);
 

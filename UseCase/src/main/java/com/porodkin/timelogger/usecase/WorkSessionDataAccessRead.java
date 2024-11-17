@@ -21,5 +21,5 @@ public interface WorkSessionDataAccessRead {
      * @param sessionId the unique identifier of the work session to be retrieved
      * @return the {@link WorkSession} object with the specified ID, or null if not found
      */
-    Optional<WorkSession> findByUserIdAndWorkSessionId(String userId, String sessionId) throws WorkSessionNotFoundException;
+    WorkSession findByUserIdAndWorkSessionId(String userId, String sessionId) throws WorkSessionNotFoundException;
 }
