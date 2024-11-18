@@ -1,0 +1,25 @@
+spring:
+
+  # DATA SOURCE
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/time_logger_db}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin_password}
+    driver-class-name: org.postgresql.Driver
+
+  #JPA
+  jpa:
+    hibernate:
+      ddl-auto: none
+#    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # LIQUIDBASE
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.json
+
+#logging:
+#  level:
+#    org.springframework: DEBUG

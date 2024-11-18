@@ -10,11 +10,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>Domain</module>
-        <module>Persistence</module>
-        <module>UseCase</module>
-        <module>Controller</module>
-        <module>Application</module>
+        <module>time-logger-domain</module>
+        <module>time-logger-persistence</module>
+        <module>time-logger-usecase</module>
+        <module>time-logger-controller</module>
+        <module>time-logger-application</module>
     </modules>
 
     <properties>
@@ -69,6 +69,12 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.2.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
