@@ -32,4 +32,9 @@ public class WorkTimeImMemoryPersist implements WorkSessionDataAccessRead, WorkS
     public WorkSession updateWorkSession(WorkSession workTime) throws WorkSessionNotFoundException {
         return sessions.put(workTime.getUuid(), workTime);
     }
+
+    @Override
+    public WorkSession findWorkSessionByUserId(String userId) {
+        return null;
+    }
 }

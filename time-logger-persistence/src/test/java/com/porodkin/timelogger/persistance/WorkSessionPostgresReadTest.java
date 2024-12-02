@@ -1,5 +1,6 @@
 package com.porodkin.timelogger.persistance;
 
+import com.porodkin.timelogger.domain.WorkSession;
 import com.porodkin.timelogger.persistance.entity.WorkTime;
 import com.porodkin.timelogger.usecase.exceptions.WorkSessionNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,6 +93,52 @@ class WorkSessionPostgresReadTest {
         assertThrows(WorkSessionNotFoundException.class,
                 () -> workSessionPostgresRead.findByUserIdAndWorkSessionId(userId, sessionId));
         verify(repository, times(1)).findByUserIdAndSessionId(userId, sessionId);
+    }
+
+    @Test
+    void testFindWorkSessionByUserId_ValidUserId() {
+        // Arrange
+        String userId = "validUserId";
+        String sessionId = UUID.randomUUID().toString();
+        WorkTime mockWorkTime = createMockWorkTime(userId, sessionId, "2024-11-15T08:00:00Z", "2024-11-15T12:00:00Z", Duration.ofHours(4));
+        when(repository.findCurrentSessionByUserId(userId)).thenReturn(Optional.of(mockWorkTime));
+
+        // Act
+        WorkSession result = workSessionPostgresRead.findWorkSessionByUserId(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        verify(repository, times(1)).findCurrentSessionByUserId(userId);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void testFindWorkSessionByUserId_NullUserId() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                workSessionPostgresRead.findWorkSessionByUserId(null));
+        assertEquals("userId is null or empty", exception.getMessage());
+    }
+
+    @Test
+    void testFindWorkSessionByUserId_BlankUserId() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                workSessionPostgresRead.findWorkSessionByUserId("   "));
+        assertEquals("userId is null or empty", exception.getMessage());
+    }
+
+    @Test
+    void testFindWorkSessionByUserId_NonExistentUserId() {
+        // Arrange
+        String userId = "nonExistentUserId";
+        when(repository.findCurrentSessionByUserId(userId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        WorkSessionNotFoundException exception = assertThrows(WorkSessionNotFoundException.class, () ->
+                workSessionPostgresRead.findWorkSessionByUserId(userId));
+        assertTrue(exception.getMessage().contains(userId));
     }
 
     private WorkTime createMockWorkTime(String userId, String sessionId, String startTime, String endTime, Duration duration) {

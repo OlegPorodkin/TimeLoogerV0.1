@@ -49,4 +49,22 @@ public class WorkSessionPostgresRead implements WorkSessionDataAccessRead {
         );
 
     }
+
+    @Override
+    public WorkSession findWorkSessionByUserId(String userId){
+        if (userId == null || userId.isBlank()) {
+            throw new IllegalArgumentException("userId is null or empty");
+        }
+
+        WorkTime workTimeFromDb = repository.findCurrentSessionByUserId(userId).orElseThrow(() -> new WorkSessionNotFoundException(userId));
+
+        return WorkSessionFabric.create(
+                workTimeFromDb.getUserId(),
+                workTimeFromDb.getSessionId(),
+                workTimeFromDb.getDate(),
+                workTimeFromDb.getStartTime(),
+                workTimeFromDb.getEndTime(),
+                workTimeFromDb.getDuration()
+        );
+    }
 }
